@@ -8,6 +8,7 @@ using Soenneker.Utils.RateLimiting.Executor.Abstract;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
+///<inheritdoc cref="IRateLimitingExecutor"/>
 public partial class RateLimitingExecutor : IRateLimitingExecutor
 {
     private readonly TimeSpan _executionInterval;

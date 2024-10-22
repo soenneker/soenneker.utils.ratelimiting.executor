@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Soenneker.Utils.RateLimiting.Executor.Abstract;
 
+/// <summary>
+/// A thread-safe utility designed to manage the rate at which tasks are executed, ensuring they are not run more frequently than a specified interval.
+/// </summary>
 public interface IRateLimitingExecutor : IDisposable, IAsyncDisposable
 {
     /// <summary>
