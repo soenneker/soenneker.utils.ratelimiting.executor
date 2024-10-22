@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading;
 
 namespace Soenneker.Utils.RateLimiting.Executor.Tests;
 
@@ -12,6 +13,112 @@ public class RateLimitingExecutorTests : FixturedUnitTest
 {
     public RateLimitingExecutorTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
     {
+    }
+
+    private async Task Method1()
+    {
+        await Task.CompletedTask;
+    }
+
+    private async ValueTask Method2() {
+        await Task.CompletedTask;
+    }
+
+    private async Task<string> Method3()
+    {
+        return await Task.FromResult("test");
+    }
+
+    private async Task Method4(string arg)
+    {
+        await Task.CompletedTask;
+    }
+
+    private async ValueTask<string> Method5(string value)
+    {
+        return await Task.FromResult(value);
+    }
+
+    private async Task<string> Method6(int value)
+    {
+        return await Task.FromResult("test");
+    }
+
+    private async Task<string> Method7(int value, int value2)
+    {
+        return await Task.FromResult("test");
+    }
+
+    private string Method8(CancellationToken cancellationToken) {
+        return "test";
+    }
+
+    private string Method9(string value)
+    {
+        return value;
+    }
+
+    [Fact]
+    public async Task Method1Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        await executor.ExecuteTask(_ => Method1());
+    }
+
+    [Fact]
+    public async Task Method2Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        await executor.Execute(_ => Method2());
+    }
+
+    [Fact]
+    public async Task Method3Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        string result = await executor.ExecuteTask(_ => Method3());
+    }
+
+    [Fact]
+    public async Task Method4Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        await executor.ExecuteTask(_ => Method4(""));
+    }
+
+    [Fact]
+    public async Task Method5Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        var result = await executor.Execute(_ => Method5(""));
+    }
+
+    [Fact]
+    public async Task Method7Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        await executor.ExecuteTask(_ =>Method7(4, 3));
+    }
+
+    [Fact]
+    public void Method8Test()
+    {
+        TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
+        var executor = new RateLimitingExecutor(executionInterval);
+
+        var result = executor.Execute(Method8);
     }
 
     [Fact]
@@ -53,6 +160,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
             taskExecuted = true;
             await Task.CompletedTask;
         });
+
         DateTime endTime = DateTime.UtcNow;
 
         taskExecuted.Should().BeTrue();

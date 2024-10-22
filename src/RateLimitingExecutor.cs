@@ -1,15 +1,14 @@
-using Soenneker.Utils.RateLimiting.Executor.Abstract;
-using System.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Nito.AsyncEx;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
+using Soenneker.Utils.RateLimiting.Executor.Abstract;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
-/// <inheritdoc cref="IRateLimitingExecutor"/>
-public class RateLimitingExecutor : IRateLimitingExecutor
+public partial class RateLimitingExecutor : IRateLimitingExecutor
 {
     private readonly TimeSpan _executionInterval;
     private readonly AsyncLock _asyncLock = new();
@@ -21,70 +20,64 @@ public class RateLimitingExecutor : IRateLimitingExecutor
         _executionInterval = executionInterval;
     }
 
-    public async ValueTask Execute(Func<CancellationToken, ValueTask> valueTask)
+    private async ValueTask<T> ExecuteValueTaskInternal<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken)
     {
-        _cancellationTokenSource.Value.Token.ThrowIfCancellationRequested();
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Value.Token, cancellationToken);
+        linkedCts.Token.ThrowIfCancellationRequested();
 
-        using (await _asyncLock.LockAsync().ConfigureAwait(false))
+        using (await _asyncLock.LockAsync(linkedCts.Token).ConfigureAwait(false))
         {
-            await WaitForNextExecutionAsync().NoSync();
+            await WaitForNextExecution(linkedCts.Token).NoSync();
+            linkedCts.Token.ThrowIfCancellationRequested();
 
-            _cancellationTokenSource.Value.Token.ThrowIfCancellationRequested();
-
-            await valueTask(_cancellationTokenSource.Value.Token).NoSync();
+            T result = await valueTask(linkedCts.Token).NoSync();
             _lastExecutionTime = DateTime.UtcNow;
+            return result;
         }
     }
 
-    public async ValueTask ExecuteTask(Func<CancellationToken, Task> task)
-    {
-        _cancellationTokenSource.Value.Token.ThrowIfCancellationRequested();
-
-        using (await _asyncLock.LockAsync().ConfigureAwait(false))
+    public async ValueTask Execute(Func<CancellationToken, ValueTask> valueTask, CancellationToken cancellationToken = default) =>
+        await ExecuteValueTaskInternal(async token =>
         {
-            await WaitForNextExecutionAsync().NoSync();
+            await valueTask(token).NoSync();
+            return 0;
+        }, cancellationToken).NoSync();
 
-            _cancellationTokenSource.Value.Token.ThrowIfCancellationRequested();
-
-            await task(_cancellationTokenSource.Value.Token).NoSync();
-            _lastExecutionTime = DateTime.UtcNow;
-        }
+    public ValueTask<T> Execute<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken = default)
+    {
+        return ExecuteValueTaskInternal(valueTask, cancellationToken);
     }
 
-    public void Execute(Action<CancellationToken> action)
-    {
-        _cancellationTokenSource.Value.Token.ThrowIfCancellationRequested();
-
-        using (_asyncLock.Lock())
+    public async ValueTask Execute<TArg>(Func<CancellationToken, TArg, ValueTask> valueTask, TArg argument, CancellationToken cancellationToken = default) =>
+        await ExecuteValueTaskInternal(async token =>
         {
-            WaitForNextExecution();
+            await valueTask(token, argument).NoSync();
+            return 0;
+        }, cancellationToken).NoSync();
 
-            _cancellationTokenSource.Value.Token.ThrowIfCancellationRequested();
-
-            action(_cancellationTokenSource.Value.Token);
-            _lastExecutionTime = DateTime.UtcNow;
-        }
+    public ValueTask<T> Execute<T, TArg>(Func<CancellationToken, TArg, ValueTask<T>> valueTask, TArg argument, CancellationToken cancellationToken = default)
+    {
+        return ExecuteValueTaskInternal(token => valueTask(token, argument), cancellationToken);
     }
 
-    private async Task WaitForNextExecutionAsync()
+    private Task WaitForNextExecution(CancellationToken cancellationToken)
     {
         TimeSpan timeSinceLastExecution = DateTime.UtcNow - _lastExecutionTime;
 
         if (timeSinceLastExecution < _executionInterval)
         {
             TimeSpan delay = _executionInterval - timeSinceLastExecution;
-            await Task.Delay(delay, _cancellationTokenSource.Value.Token).NoSync();
+            return Task.Delay(delay, cancellationToken);
         }
+
+        return Task.CompletedTask;
     }
 
-    private void WaitForNextExecution()
+    public void CancelExecution()
     {
-        TimeSpan timeSinceLastExecution = DateTime.UtcNow - _lastExecutionTime;
-
-        if (timeSinceLastExecution < _executionInterval)
+        if (_cancellationTokenSource.IsValueCreated && !_cancellationTokenSource.Value.IsCancellationRequested)
         {
-            TimeSpan delay = _executionInterval - timeSinceLastExecution;
-            Task.Delay(delay, _cancellationTokenSource.Value.Token).Wait();
+            _cancellationTokenSource.Value.Cancel();
         }
     }
 
