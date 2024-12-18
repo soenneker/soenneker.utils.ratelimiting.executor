@@ -3,7 +3,7 @@ using Soenneker.Tests.FixturedUnit;
 using System.Threading.Tasks;
 using System;
 using Xunit;
-using Xunit.Abstractions;
+
 using System.Threading;
 
 namespace Soenneker.Utils.RateLimiting.Executor.Tests;
