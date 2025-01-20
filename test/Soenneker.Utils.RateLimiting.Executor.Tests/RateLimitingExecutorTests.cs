@@ -166,7 +166,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         taskExecuted.Should().BeTrue();
 
         TimeSpan tolerance = TimeSpan.FromMilliseconds(50);
-        (endTime - startTime).Should().BeGreaterOrEqualTo(executionInterval - tolerance);
+        (endTime - startTime).Should().BeGreaterThanOrEqualTo(executionInterval - tolerance);
     }
 
     [Fact]
