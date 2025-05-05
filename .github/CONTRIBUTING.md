@@ -1,4 +1,4 @@
-# Contributing to Soenneker.Utils.RateLimiting.Executor
+﻿# Contributing to Soenneker.Utils.RateLimiting.Executor
 
 We're excited that you're interested in contributing!
 
