@@ -3,8 +3,8 @@ using Soenneker.Tests.FixturedUnit;
 using System.Threading.Tasks;
 using System;
 using Xunit;
-
 using System.Threading;
+using Soenneker.Utils.Delay;
 
 namespace Soenneker.Utils.RateLimiting.Executor.Tests;
 
@@ -20,7 +20,8 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         await Task.CompletedTask;
     }
 
-    private async ValueTask Method2() {
+    private async ValueTask Method2()
+    {
         await Task.CompletedTask;
     }
 
@@ -49,7 +50,8 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         return await Task.FromResult("test");
     }
 
-    private string Method8(CancellationToken cancellationToken) {
+    private string Method8(CancellationToken cancellationToken)
+    {
         return "test";
     }
 
@@ -64,7 +66,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.ExecuteTask(_ => Method1());
+        await executor.ExecuteTask(_ => Method1(), CancellationToken);
     }
 
     [Fact]
@@ -73,7 +75,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.Execute(_ => Method2());
+        await executor.Execute(_ => Method2(), CancellationToken);
     }
 
     [Fact]
@@ -82,7 +84,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        string result = await executor.ExecuteTask(_ => Method3());
+        string result = await executor.ExecuteTask(_ => Method3(), CancellationToken);
     }
 
     [Fact]
@@ -91,7 +93,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.ExecuteTask(_ => Method4(""));
+        await executor.ExecuteTask(_ => Method4(""), CancellationToken);
     }
 
     [Fact]
@@ -100,7 +102,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        var result = await executor.Execute(_ => Method5(""));
+        var result = await executor.Execute(_ => Method5(""), CancellationToken);
     }
 
     [Fact]
@@ -109,7 +111,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.ExecuteTask(_ =>Method7(4, 3));
+        await executor.ExecuteTask(_ => Method7(4, 3), CancellationToken);
     }
 
     [Fact]
@@ -118,7 +120,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        var result = executor.Execute(Method8);
+        var result = executor.Execute(Method8, CancellationToken);
     }
 
     [Fact]
@@ -132,7 +134,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         {
             taskExecuted = true;
             await Task.CompletedTask;
-        });
+        }, CancellationToken);
 
         taskExecuted.Should().BeTrue();
     }
@@ -148,7 +150,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         {
             taskExecuted = true;
             await Task.CompletedTask;
-        });
+        }, CancellationToken);
 
         taskExecuted.Should().BeTrue();
 
@@ -159,7 +161,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         {
             taskExecuted = true;
             await Task.CompletedTask;
-        });
+        }, CancellationToken);
 
         DateTime endTime = DateTime.UtcNow;
 
@@ -175,18 +177,13 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.Execute(async token =>
-        {
-            await Task.Delay(100, token);
-        });
+        await executor.Execute(async token => { await DelayUtil.Delay(100, null, token); }, CancellationToken);
 
         await executor.DisposeAsync();
 
-        await FluentActions.Awaiting(async () =>
-            await executor.Execute(async token =>
-            {
-                await Task.CompletedTask;
-            })).Should().ThrowAsync<ObjectDisposedException>();
+        await FluentActions.Awaiting(async () => await executor.Execute(async token => { await Task.CompletedTask; }))
+                           .Should()
+                           .ThrowAsync<ObjectDisposedException>();
     }
 
     [Fact]
@@ -196,10 +193,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         var executor = new RateLimitingExecutor(executionInterval);
         var actionExecuted = false;
 
-        executor.Execute(token =>
-        {
-            actionExecuted = true;
-        });
+        executor.Execute(token => { actionExecuted = true; }, CancellationToken);
 
         actionExecuted.Should().BeTrue();
     }
@@ -210,14 +204,10 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        ValueTask executionTask = executor.Execute(async token =>
-        {
-            await Task.Delay(1000, token);
-        });
+        ValueTask executionTask = executor.Execute(async token => { await DelayUtil.Delay(1000, null, token); }, CancellationToken);
 
         await executor.DisposeAsync();
 
-        await FluentActions.Awaiting(async () => await executionTask)
-            .Should().ThrowAsync<OperationCanceledException>();
+        await FluentActions.Awaiting(async () => await executionTask).Should().ThrowAsync<OperationCanceledException>();
     }
 }

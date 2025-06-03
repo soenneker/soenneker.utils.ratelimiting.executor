@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Nito.AsyncEx;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
+using Soenneker.Utils.Delay;
 using Soenneker.Utils.RateLimiting.Executor.Abstract;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
@@ -68,7 +69,7 @@ public partial class RateLimitingExecutor : IRateLimitingExecutor
         if (timeSinceLastExecution < _executionInterval)
         {
             TimeSpan delay = _executionInterval - timeSinceLastExecution;
-            return Task.Delay(delay, cancellationToken);
+            return DelayUtil.Delay(delay, null, cancellationToken);
         }
 
         return Task.CompletedTask;

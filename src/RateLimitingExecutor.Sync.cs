@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
+using Soenneker.Utils.Delay;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
@@ -29,7 +29,11 @@ public partial class RateLimitingExecutor
         ExecuteInternal(token => action(token, argument), cancellationToken);
 
     public void Execute(Action<CancellationToken> action, CancellationToken cancellationToken = default) =>
-        ExecuteInternal(token => { action(token); return 0; }, cancellationToken);
+        ExecuteInternal(token =>
+        {
+            action(token);
+            return 0;
+        }, cancellationToken);
 
     private void WaitForNextExecutionSync(CancellationToken cancellationToken)
     {
@@ -38,7 +42,7 @@ public partial class RateLimitingExecutor
         if (timeSinceLastExecution < _executionInterval)
         {
             TimeSpan delay = _executionInterval - timeSinceLastExecution;
-            Task.Delay(delay, cancellationToken).Wait(cancellationToken);
+            DelayUtil.Delay(delay, null, cancellationToken).Wait(cancellationToken);
         }
     }
 }
