@@ -5,7 +5,7 @@ using Soenneker.Extensions.Task;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
-public partial class RateLimitingExecutor
+public sealed partial class RateLimitingExecutor
 {
     private async Task<T> ExecuteTaskInternal<T>(Func<CancellationToken, Task<T>> task, CancellationToken cancellationToken)
     {

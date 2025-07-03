@@ -4,7 +4,7 @@ using Soenneker.Utils.Delay;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
-public partial class RateLimitingExecutor
+public sealed partial class RateLimitingExecutor
 {
     private T ExecuteInternal<T>(Func<CancellationToken, T> task, CancellationToken cancellationToken)
     {
