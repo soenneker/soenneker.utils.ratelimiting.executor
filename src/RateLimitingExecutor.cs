@@ -85,8 +85,6 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 
     public async ValueTask DisposeAsync()
     {
-        GC.SuppressFinalize(this);
-
         if (_cancellationTokenSource.IsValueCreated && !_cancellationTokenSource.Value.IsCancellationRequested)
         {
             await _cancellationTokenSource.Value.CancelAsync().NoSync();
@@ -100,8 +98,6 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-
         if (_cancellationTokenSource.IsValueCreated && !_cancellationTokenSource.Value.IsCancellationRequested)
         {
             _cancellationTokenSource.Value.Cancel();
