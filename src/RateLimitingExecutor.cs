@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
+using Soenneker.Asyncs.Locks;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Utils.Delay;
@@ -27,7 +27,7 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Value.Token, cancellationToken);
         linkedCts.Token.ThrowIfCancellationRequested();
 
-        using (await _asyncLock.LockAsync(linkedCts.Token).ConfigureAwait(false))
+        using (await _asyncLock.Lock(linkedCts.Token).NoSync())
         {
             await WaitForNextExecution(linkedCts.Token).NoSync();
             linkedCts.Token.ThrowIfCancellationRequested();

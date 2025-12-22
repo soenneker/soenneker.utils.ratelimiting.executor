@@ -11,7 +11,7 @@ public sealed partial class RateLimitingExecutor
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Value.Token, cancellationToken);
         linkedCts.Token.ThrowIfCancellationRequested();
 
-        using (_asyncLock.Lock(linkedCts.Token))
+        using (_asyncLock.LockSync(linkedCts.Token))
         {
             WaitForNextExecutionSync(linkedCts.Token);
             linkedCts.Token.ThrowIfCancellationRequested();
