@@ -15,7 +15,7 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
     private readonly TimeSpan _executionInterval;
     private readonly AsyncLock _asyncLock = new();
     private readonly Lazy<CancellationTokenSource> _cancellationTokenSource = new(() => new CancellationTokenSource());
-    private DateTime _lastExecutionTime = DateTime.MinValue;
+    private DateTimeOffset _lastExecutionTime = DateTimeOffset.MinValue;
 
     public RateLimitingExecutor(TimeSpan executionInterval)
     {
@@ -27,23 +27,28 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Value.Token, cancellationToken);
         linkedCts.Token.ThrowIfCancellationRequested();
 
-        using (await _asyncLock.Lock(linkedCts.Token).NoSync())
+        using (await _asyncLock.Lock(linkedCts.Token)
+                               .NoSync())
         {
-            await WaitForNextExecution(linkedCts.Token).NoSync();
+            await WaitForNextExecution(linkedCts.Token)
+                .NoSync();
             linkedCts.Token.ThrowIfCancellationRequested();
 
-            T result = await valueTask(linkedCts.Token).NoSync();
-            _lastExecutionTime = DateTime.UtcNow;
+            T result = await valueTask(linkedCts.Token)
+                .NoSync();
+            _lastExecutionTime = DateTimeOffset.UtcNow;
             return result;
         }
     }
 
     public async ValueTask Execute(Func<CancellationToken, ValueTask> valueTask, CancellationToken cancellationToken = default) =>
         await ExecuteValueTaskInternal(async token =>
-        {
-            await valueTask(token).NoSync();
-            return 0;
-        }, cancellationToken).NoSync();
+            {
+                await valueTask(token)
+                    .NoSync();
+                return 0;
+            }, cancellationToken)
+            .NoSync();
 
     public ValueTask<T> Execute<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken = default)
     {
@@ -52,19 +57,21 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 
     public async ValueTask Execute<TArg>(Func<CancellationToken, TArg, ValueTask> valueTask, TArg argument, CancellationToken cancellationToken = default) =>
         await ExecuteValueTaskInternal(async token =>
-        {
-            await valueTask(token, argument).NoSync();
-            return 0;
-        }, cancellationToken).NoSync();
+            {
+                await valueTask(token, argument)
+                    .NoSync();
+                return 0;
+            }, cancellationToken)
+            .NoSync();
 
     public ValueTask<T> Execute<T, TArg>(Func<CancellationToken, TArg, ValueTask<T>> valueTask, TArg argument, CancellationToken cancellationToken = default)
     {
         return ExecuteValueTaskInternal(token => valueTask(token, argument), cancellationToken);
     }
 
-    private Task WaitForNextExecution(CancellationToken cancellationToken)
+    private ValueTask WaitForNextExecution(CancellationToken cancellationToken)
     {
-        TimeSpan timeSinceLastExecution = DateTime.UtcNow - _lastExecutionTime;
+        TimeSpan timeSinceLastExecution = DateTimeOffset.UtcNow - _lastExecutionTime;
 
         if (timeSinceLastExecution < _executionInterval)
         {
@@ -72,7 +79,7 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
             return DelayUtil.Delay(delay, null, cancellationToken);
         }
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
     public void CancelExecution()
@@ -87,7 +94,8 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
     {
         if (_cancellationTokenSource.IsValueCreated && !_cancellationTokenSource.Value.IsCancellationRequested)
         {
-            await _cancellationTokenSource.Value.CancelAsync().NoSync();
+            await _cancellationTokenSource.Value.CancelAsync()
+                                          .NoSync();
         }
 
         if (_cancellationTokenSource.IsValueCreated)
