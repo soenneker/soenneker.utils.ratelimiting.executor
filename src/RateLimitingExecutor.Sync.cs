@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using Soenneker.Utils.Delay;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
@@ -42,7 +41,9 @@ public sealed partial class RateLimitingExecutor
         if (timeSinceLastExecution < _executionInterval)
         {
             TimeSpan delay = _executionInterval - timeSinceLastExecution;
-            DelayUtil.Delay(delay, null, cancellationToken).Wait(cancellationToken);
+
+            if (cancellationToken.WaitHandle.WaitOne(delay))
+                cancellationToken.ThrowIfCancellationRequested();
         }
     }
 }
