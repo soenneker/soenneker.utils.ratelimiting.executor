@@ -1,6 +1,7 @@
-﻿[![](https://img.shields.io/nuget/v/soenneker.utils.ratelimiting.executor.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.utils.ratelimiting.executor/)
+[![](https://img.shields.io/nuget/v/soenneker.utils.ratelimiting.executor.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.utils.ratelimiting.executor/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.utils.ratelimiting.executor/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.utils.ratelimiting.executor/actions/workflows/publish-package.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.utils.ratelimiting.executor.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.utils.ratelimiting.executor/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.utils.ratelimiting.executor/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.utils.ratelimiting.executor/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Utils.RateLimiting.Executor
 ### A thread-safe utility designed to manage the rate at which tasks are executed, ensuring they are not run more frequently than a specified interval. 
@@ -11,7 +12,7 @@
 
 `Tasks`, `ValueTasks`, and `Actions` are executed one at a time. If the defined interval between executions has passed, the task runs immediately; otherwise, it waits until the interval elapses before proceeding.
 
-⚠️ Important Notes:
+?? Important Notes:
 
 - This is not a background queue processor. Each method awaits the result of the asynchronous operation before continuing.
 
