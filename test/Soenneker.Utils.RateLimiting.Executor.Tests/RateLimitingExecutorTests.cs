@@ -1,17 +1,16 @@
 using AwesomeAssertions;
-using Soenneker.Tests.FixturedUnit;
+using Soenneker.Tests.HostedUnit;
 using System.Threading.Tasks;
 using System;
-using Xunit;
 using System.Threading;
 using Soenneker.Utils.Delay;
 
 namespace Soenneker.Utils.RateLimiting.Executor.Tests;
 
-[Collection("Collection")]
-public class RateLimitingExecutorTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class RateLimitingExecutorTests : HostedUnitTest
 {
-    public RateLimitingExecutorTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public RateLimitingExecutorTests(Host host) : base(host)
     {
     }
 
@@ -60,7 +59,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         return value;
     }
 
-    [Fact]
+    [Test]
     public async Task Method1Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -69,7 +68,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         await executor.ExecuteTask(_ => Method1(), CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public async Task Method2Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -78,7 +77,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         await executor.Execute(_ => Method2(), CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public async Task Method3Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -87,7 +86,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         string result = await executor.ExecuteTask(_ => Method3(), CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public async Task Method4Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -96,7 +95,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         await executor.ExecuteTask(_ => Method4(""), CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public async Task Method5Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -105,7 +104,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         var result = await executor.Execute(_ => Method5(""), CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public async Task Method7Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -114,7 +113,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         await executor.ExecuteTask(_ => Method7(4, 3), CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public void Method8Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -123,7 +122,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         var result = executor.Execute(Method8, CancellationToken);
     }
 
-    [Fact]
+    [Test]
     public async Task Execute_ShouldRunTaskWithoutDelay_WhenFirstExecution()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -139,7 +138,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         taskExecuted.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task Execute_ShouldRespectExecutionInterval_BetweenTasks()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -171,7 +170,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         (endTime - startTime).Should().BeGreaterThanOrEqualTo(executionInterval - tolerance);
     }
 
-    [Fact]
+    [Test]
     public async Task Execute_ShouldThrowOperationCanceledException_WhenCancelled()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -186,7 +185,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
                            .ThrowAsync<ObjectDisposedException>();
     }
 
-    [Fact]
+    [Test]
     public void Execute_Action_ShouldRunWithoutDelay_WhenFirstExecution()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
@@ -198,7 +197,7 @@ public class RateLimitingExecutorTests : FixturedUnitTest
         actionExecuted.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task DisposeAsync_ShouldCancelPendingTasks()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
