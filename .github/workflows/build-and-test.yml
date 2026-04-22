@@ -38,7 +38,7 @@ jobs:
         run: dotnet build test/Soenneker.Utils.RateLimiting.Executor.Tests/Soenneker.Utils.RateLimiting.Executor.Tests.csproj --configuration Release --no-restore --verbosity minimal
 
       - name: Test
-        run: dotnet test test/Soenneker.Utils.RateLimiting.Executor.Tests/Soenneker.Utils.RateLimiting.Executor.Tests.csproj --configuration Release --no-build --no-restore --verbosity minimal
+        run: dotnet test --project test/Soenneker.Utils.RateLimiting.Executor.Tests/Soenneker.Utils.RateLimiting.Executor.Tests.csproj --configuration Release --no-build --no-restore --verbosity minimal
 
       - name: Pack
         run: dotnet pack src/Soenneker.Utils.RateLimiting.Executor/Soenneker.Utils.RateLimiting.Executor.csproj --configuration Release --no-build --no-restore --output . --verbosity minimal
