@@ -47,6 +47,12 @@ public interface IRateLimitingExecutor : IDisposable, IAsyncDisposable
     /// <returns>A task that represents the asynchronous operation and returns a result of type <typeparamref name="T"/>.</returns>
     ValueTask<T> Execute<T, TArg>(Func<CancellationToken, TArg, ValueTask<T>> valueTask, TArg argument, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the execute task operation.
+    /// </summary>
+    /// <param name="task">The task.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     Task ExecuteTask(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -96,5 +102,8 @@ public interface IRateLimitingExecutor : IDisposable, IAsyncDisposable
     /// <param name="cancellationToken"></param>
     void Execute(Action<CancellationToken> action, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the cancel execution operation.
+    /// </summary>
     void CancelExecution();
 }

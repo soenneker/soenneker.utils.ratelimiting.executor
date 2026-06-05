@@ -3,6 +3,9 @@ using System.Threading;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
+/// <summary>
+/// Represents the rate limiting executor.
+/// </summary>
 public sealed partial class RateLimitingExecutor
 {
     private T ExecuteInternal<T>(Func<CancellationToken, T> task, CancellationToken cancellationToken)
@@ -21,12 +24,33 @@ public sealed partial class RateLimitingExecutor
         }
     }
 
+    /// <summary>
+    /// Executes the execute operation.
+    /// </summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <param name="action">The action.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the operation.</returns>
     public T Execute<T>(Func<CancellationToken, T> action, CancellationToken cancellationToken = default) =>
         ExecuteInternal(action, cancellationToken);
 
+    /// <summary>
+    /// Executes the execute operation.
+    /// </summary>
+    /// <typeparam name="T">The T type.</typeparam>
+    /// <typeparam name="TArg">The TArg type.</typeparam>
+    /// <param name="action">The action.</param>
+    /// <param name="argument">The argument.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The result of the operation.</returns>
     public T Execute<T, TArg>(Func<CancellationToken, TArg, T> action, TArg argument, CancellationToken cancellationToken = default) =>
         ExecuteInternal(token => action(token, argument), cancellationToken);
 
+    /// <summary>
+    /// Executes the execute operation.
+    /// </summary>
+    /// <param name="action">The action.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public void Execute(Action<CancellationToken> action, CancellationToken cancellationToken = default) =>
         ExecuteInternal(token =>
         {
