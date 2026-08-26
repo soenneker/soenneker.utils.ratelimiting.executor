@@ -13,17 +13,20 @@ public sealed partial class RateLimitingExecutor
 {
     private async Task<T> ExecuteTaskInternal<T>(Func<CancellationToken, Task<T>> task, CancellationToken cancellationToken)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Value.Token, cancellationToken);
-        linkedCts.Token.ThrowIfCancellationRequested();
-
-        using (await _asyncLock.Lock(linkedCts.Token).NoSync())
+        CancellationToken token = GetExecutionToken(cancellationToken, out CancellationTokenSource? linkedCts);
+        using (linkedCts)
         {
-            await WaitForNextExecution(linkedCts.Token).NoSync();
-            linkedCts.Token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
 
-            T result = await task(linkedCts.Token).NoSync();
-            _lastExecutionTime = DateTime.UtcNow;
-            return result;
+            using (await _asyncLock.Lock(token).NoSync())
+            {
+                await WaitForNextExecution(token).NoSync();
+                token.ThrowIfCancellationRequested();
+
+                T result = await task(token).NoSync();
+                _lastExecutionTime = DateTime.UtcNow;
+                return result;
+            }
         }
     }
 

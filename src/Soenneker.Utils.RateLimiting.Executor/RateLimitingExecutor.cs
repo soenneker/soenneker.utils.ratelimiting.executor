@@ -24,21 +24,35 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 
     private async ValueTask<T> ExecuteValueTaskInternal<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Value.Token, cancellationToken);
-        linkedCts.Token.ThrowIfCancellationRequested();
-
-        using (await _asyncLock.Lock(linkedCts.Token)
-                               .NoSync())
+        CancellationToken token = GetExecutionToken(cancellationToken, out CancellationTokenSource? linkedCts);
+        using (linkedCts)
         {
-            await WaitForNextExecution(linkedCts.Token)
-                .NoSync();
-            linkedCts.Token.ThrowIfCancellationRequested();
+            token.ThrowIfCancellationRequested();
 
-            T result = await valueTask(linkedCts.Token)
-                .NoSync();
-            _lastExecutionTime = DateTimeOffset.UtcNow;
-            return result;
+            using (await _asyncLock.Lock(token).NoSync())
+            {
+                await WaitForNextExecution(token).NoSync();
+                token.ThrowIfCancellationRequested();
+
+                T result = await valueTask(token).NoSync();
+                _lastExecutionTime = DateTimeOffset.UtcNow;
+                return result;
+            }
         }
+    }
+
+    private CancellationToken GetExecutionToken(CancellationToken callerToken, out CancellationTokenSource? linkedCts)
+    {
+        CancellationToken executorToken = _cancellationTokenSource.Value.Token;
+
+        if (!callerToken.CanBeCanceled)
+        {
+            linkedCts = null;
+            return executorToken;
+        }
+
+        linkedCts = CancellationTokenSource.CreateLinkedTokenSource(executorToken, callerToken);
+        return linkedCts.Token;
     }
 
     public async ValueTask Execute(Func<CancellationToken, ValueTask> valueTask, CancellationToken cancellationToken = default) =>
