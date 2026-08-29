@@ -10,100 +10,100 @@ namespace Soenneker.Utils.RateLimiting.Executor.Abstract;
 public interface IRateLimitingExecutor : IDisposable, IAsyncDisposable
 {
     /// <summary>
-    /// Executes an asynchronous operation with rate limiting.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <param name="valueTask">The asynchronous operation to execute.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="valueTask">The asynchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>An awaitable that completes when the permitted delegate finishes.</returns>
     ValueTask Execute(Func<CancellationToken, ValueTask> valueTask, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes an asynchronous operation with rate limiting and returns a result.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <param name="valueTask">The asynchronous operation to execute.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task that represents the asynchronous operation and returns a result of type <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <param name="valueTask">The asynchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>The delegate's value after a permit is acquired.</returns>
     ValueTask<T> Execute<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes an asynchronous operation with rate limiting, with an argument.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <typeparam name="TArg">The type of the argument.</typeparam>
-    /// <param name="valueTask">The asynchronous operation to execute.</param>
-    /// <param name="argument">The argument to pass to the operation.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <typeparam name="TArg">The delegate argument type.</typeparam>
+    /// <param name="valueTask">The asynchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="argument">The value passed to the delegate.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>An awaitable that completes when the permitted delegate finishes.</returns>
     ValueTask Execute<TArg>(Func<CancellationToken, TArg, ValueTask> valueTask, TArg argument, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes an asynchronous operation with rate limiting, with an argument and returns a result.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <typeparam name="TArg">The type of the argument.</typeparam>
-    /// <param name="valueTask">The asynchronous operation to execute.</param>
-    /// <param name="argument">The argument to pass to the operation.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task that represents the asynchronous operation and returns a result of type <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <typeparam name="TArg">The delegate argument type.</typeparam>
+    /// <param name="valueTask">The asynchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="argument">The value passed to the delegate.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>The delegate's value after a permit is acquired.</returns>
     ValueTask<T> Execute<T, TArg>(Func<CancellationToken, TArg, ValueTask<T>> valueTask, TArg argument, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes the execute task operation.
+    /// Waits for a rate-limit permit and then invokes the supplied task-returning delegate.
     /// </summary>
-    /// <param name="task">The task.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="task">The task-returning delegate invoked after acquiring a permit.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>An awaitable that completes when the permitted delegate finishes.</returns>
     Task ExecuteTask(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes an asynchronous operation with rate limiting and returns a result.
+    /// Waits for a rate-limit permit and then invokes the supplied task-returning delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <param name="task">The asynchronous operation to execute.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task that represents the asynchronous operation and returns a result of type <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <param name="task">The task-returning delegate invoked after acquiring a permit.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>The delegate's value after a permit is acquired.</returns>
     Task<T> ExecuteTask<T>(Func<CancellationToken, Task<T>> task, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes an asynchronous operation with rate limiting, with an argument and returns a result.
+    /// Waits for a rate-limit permit and then invokes the supplied task-returning delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <typeparam name="TArg">The type of the argument.</typeparam>
-    /// <param name="task">The asynchronous operation to execute.</param>
-    /// <param name="argument">The argument to pass to the operation.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A task that represents the asynchronous operation and returns a result of type <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <typeparam name="TArg">The delegate argument type.</typeparam>
+    /// <param name="task">The task-returning delegate invoked after acquiring a permit.</param>
+    /// <param name="argument">The value passed to the delegate.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>The delegate's value after a permit is acquired.</returns>
     Task<T> ExecuteTask<T, TArg>(Func<CancellationToken, TArg, Task<T>> task, TArg argument, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes a synchronous operation with rate limiting, with an argument and returns a result.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <typeparam name="TArg">The type of the argument.</typeparam>
-    /// <param name="action">The synchronous operation to execute.</param>
-    /// <param name="argument">The argument to pass to the operation.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>The result of type <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <typeparam name="TArg">The delegate argument type.</typeparam>
+    /// <param name="action">The synchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="argument">The value passed to the delegate.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>An awaitable that completes when the permitted delegate finishes.</returns>
     T Execute<T, TArg>(Func<CancellationToken, TArg, T> action, TArg argument, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes a synchronous operation with rate limiting, with an argument and returns a result.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the result.</typeparam>
-    /// <param name="action">The synchronous operation to execute.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>The result of type <typeparamref name="T"/>.</returns>
+    /// <typeparam name="T">The delegate result type.</typeparam>
+    /// <param name="action">The synchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
+    /// <returns>An awaitable that completes when the permitted delegate finishes.</returns>
     T Execute<T>(Func<CancellationToken, T> action, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes a synchronous operation with rate limiting.
+    /// Waits for a rate-limit permit and then invokes the supplied delegate.
     /// </summary>
-    /// <param name="action">The synchronous operation to execute.</param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="action">The synchronous delegate invoked after acquiring a permit.</param>
+    /// <param name="cancellationToken">Signals that the operation should stop.</param>
     void Execute(Action<CancellationToken> action, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes the cancel execution operation.
+    /// Cancels the executor's current or pending operation without disposing the executor.
     /// </summary>
     void CancelExecution();
 }
