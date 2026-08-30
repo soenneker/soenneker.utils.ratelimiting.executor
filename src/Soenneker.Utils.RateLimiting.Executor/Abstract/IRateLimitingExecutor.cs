@@ -103,7 +103,7 @@ public interface IRateLimitingExecutor : IDisposable, IAsyncDisposable
     void Execute(Action<CancellationToken> action, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Cancels the executor's current or pending operation without disposing the executor.
+    /// Permanently cancels the executor's current, pending, and future operations without disposing its resources.
     /// </summary>
     void CancelExecution();
 }

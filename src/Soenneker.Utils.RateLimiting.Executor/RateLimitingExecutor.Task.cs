@@ -23,9 +23,14 @@ public sealed partial class RateLimitingExecutor
                 await WaitForNextExecution(token).NoSync();
                 token.ThrowIfCancellationRequested();
 
-                T result = await task(token).NoSync();
-                _lastExecutionTime = DateTime.UtcNow;
-                return result;
+                try
+                {
+                    return await task(token).NoSync();
+                }
+                finally
+                {
+                    _lastExecutionTime = DateTimeOffset.UtcNow;
+                }
             }
         }
     }

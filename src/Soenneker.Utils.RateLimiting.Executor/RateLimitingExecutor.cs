@@ -9,7 +9,6 @@ using Soenneker.Utils.RateLimiting.Executor.Abstract;
 
 namespace Soenneker.Utils.RateLimiting.Executor;
 
-///<inheritdoc cref="IRateLimitingExecutor"/>
 public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 {
     private readonly TimeSpan _executionInterval;
@@ -34,9 +33,14 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
                 await WaitForNextExecution(token).NoSync();
                 token.ThrowIfCancellationRequested();
 
-                T result = await valueTask(token).NoSync();
-                _lastExecutionTime = DateTimeOffset.UtcNow;
-                return result;
+                try
+                {
+                    return await valueTask(token).NoSync();
+                }
+                finally
+                {
+                    _lastExecutionTime = DateTimeOffset.UtcNow;
+                }
             }
         }
     }
@@ -104,10 +108,6 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
         }
     }
 
-    /// <summary>
-    /// Asynchronously releases resources used by the current instance.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous operation.</returns>
     public async ValueTask DisposeAsync()
     {
         if (_cancellationTokenSource.IsValueCreated && !_cancellationTokenSource.Value.IsCancellationRequested)
@@ -122,9 +122,6 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
         }
     }
 
-    /// <summary>
-    /// Releases resources used by the current instance.
-    /// </summary>
     public void Dispose()
     {
         if (_cancellationTokenSource.IsValueCreated && !_cancellationTokenSource.Value.IsCancellationRequested)
