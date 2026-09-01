@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Soenneker.Asyncs.Locks;
 using Soenneker.Extensions.Task;
 using Soenneker.Extensions.ValueTask;
+using Soenneker.Extensions.CancellationTokens;
 using Soenneker.Utils.Delay;
 using Soenneker.Utils.RateLimiting.Executor.Abstract;
 
@@ -47,16 +48,7 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 
     private CancellationToken GetExecutionToken(CancellationToken callerToken, out CancellationTokenSource? linkedCts)
     {
-        CancellationToken executorToken = _cancellationTokenSource.Value.Token;
-
-        if (!callerToken.CanBeCanceled)
-        {
-            linkedCts = null;
-            return executorToken;
-        }
-
-        linkedCts = CancellationTokenSource.CreateLinkedTokenSource(executorToken, callerToken);
-        return linkedCts.Token;
+        return _cancellationTokenSource.Value.Token.Link(callerToken, out linkedCts);
     }
 
     public async ValueTask Execute(Func<CancellationToken, ValueTask> valueTask, CancellationToken cancellationToken = default) =>
