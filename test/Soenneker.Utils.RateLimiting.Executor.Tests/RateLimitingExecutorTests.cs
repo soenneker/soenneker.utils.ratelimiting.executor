@@ -171,7 +171,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Execute_ShouldThrowOperationCanceledException_WhenCancelled()
+    public async Task Execute_ShouldThrowOperationCanceledException_WhenCancelled(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -180,7 +180,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
 
         await executor.DisposeAsync();
 
-        await FluentActions.Awaiting(async () => await executor.Execute(async token => { await Task.CompletedTask; }))
+        await FluentActions.Awaiting(async () => await executor.Execute(async token => { await Task.CompletedTask; }, cancellationToken: cancellationToken))
                            .Should()
                            .ThrowAsync<ObjectDisposedException>();
     }
