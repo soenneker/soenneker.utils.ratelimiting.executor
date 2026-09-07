@@ -23,7 +23,7 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
         _executionInterval = executionInterval;
     }
 
-    private async ValueTask<T> ExecuteValueTaskInternal<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken)
+    private async ValueTask<T> ExecuteValueTaskInternal<T, TArg>(Func<CancellationToken, TArg, ValueTask<T>> valueTask, TArg argument, CancellationToken cancellationToken)
     {
         CancellationToken token = GetExecutionToken(cancellationToken, out CancellationTokenSource? linkedCts);
         using (linkedCts)
@@ -37,7 +37,7 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
 
                 try
                 {
-                    return await valueTask(token).NoSync();
+                    return await valueTask(token, argument).NoSync();
                 }
                 finally
                 {
@@ -53,31 +53,31 @@ public sealed partial class RateLimitingExecutor : IRateLimitingExecutor
     }
 
     public async ValueTask Execute(Func<CancellationToken, ValueTask> valueTask, CancellationToken cancellationToken = default) =>
-        await ExecuteValueTaskInternal(async token =>
+        await ExecuteValueTaskInternal(static async (token, callback) =>
             {
-                await valueTask(token)
+                await callback(token)
                     .NoSync();
                 return 0;
-            }, cancellationToken)
+            }, valueTask, cancellationToken)
             .NoSync();
 
     public ValueTask<T> Execute<T>(Func<CancellationToken, ValueTask<T>> valueTask, CancellationToken cancellationToken = default)
     {
-        return ExecuteValueTaskInternal(valueTask, cancellationToken);
+        return ExecuteValueTaskInternal(static (token, callback) => callback(token), valueTask, cancellationToken);
     }
 
     public async ValueTask Execute<TArg>(Func<CancellationToken, TArg, ValueTask> valueTask, TArg argument, CancellationToken cancellationToken = default) =>
-        await ExecuteValueTaskInternal(async token =>
+        await ExecuteValueTaskInternal(static async (token, state) =>
             {
-                await valueTask(token, argument)
+                await state.Callback(token, state.Argument)
                     .NoSync();
                 return 0;
-            }, cancellationToken)
+            }, (Callback: valueTask, Argument: argument), cancellationToken)
             .NoSync();
 
     public ValueTask<T> Execute<T, TArg>(Func<CancellationToken, TArg, ValueTask<T>> valueTask, TArg argument, CancellationToken cancellationToken = default)
     {
-        return ExecuteValueTaskInternal(token => valueTask(token, argument), cancellationToken);
+        return ExecuteValueTaskInternal(valueTask, argument, cancellationToken);
     }
 
     private ValueTask WaitForNextExecution(CancellationToken cancellationToken)

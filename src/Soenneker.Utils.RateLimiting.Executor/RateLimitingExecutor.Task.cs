@@ -11,7 +11,7 @@ namespace Soenneker.Utils.RateLimiting.Executor;
 /// </summary>
 public sealed partial class RateLimitingExecutor
 {
-    private async Task<T> ExecuteTaskInternal<T>(Func<CancellationToken, Task<T>> task, CancellationToken cancellationToken)
+    private async Task<T> ExecuteTaskInternal<T, TArg>(Func<CancellationToken, TArg, Task<T>> task, TArg argument, CancellationToken cancellationToken)
     {
         CancellationToken token = GetExecutionToken(cancellationToken, out CancellationTokenSource? linkedCts);
         using (linkedCts)
@@ -25,7 +25,7 @@ public sealed partial class RateLimitingExecutor
 
                 try
                 {
-                    return await task(token).NoSync();
+                    return await task(token, argument).NoSync();
                 }
                 finally
                 {
@@ -42,11 +42,11 @@ public sealed partial class RateLimitingExecutor
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task ExecuteTask(Func<CancellationToken, Task> task, CancellationToken cancellationToken = default) =>
-        await ExecuteTaskInternal(async token =>
+        await ExecuteTaskInternal(static async (token, callback) =>
         {
-            await task(token);
+            await callback(token);
             return 0;
-        }, cancellationToken).NoSync();
+        }, task, cancellationToken).NoSync();
 
     /// <summary>
     /// Executes the execute task operation.
@@ -57,7 +57,7 @@ public sealed partial class RateLimitingExecutor
     /// <returns>A task containing the result of the operation.</returns>
     public Task<T> ExecuteTask<T>(Func<CancellationToken, Task<T>> task, CancellationToken cancellationToken = default)
     {
-        return ExecuteTaskInternal(task, cancellationToken);
+        return ExecuteTaskInternal(static (token, callback) => callback(token), task, cancellationToken);
     }
 
     /// <summary>
@@ -71,6 +71,6 @@ public sealed partial class RateLimitingExecutor
     /// <returns>A task containing the result of the operation.</returns>
     public Task<T> ExecuteTask<T, TArg>(Func<CancellationToken, TArg, Task<T>> task, TArg argument, CancellationToken cancellationToken = default)
     {
-        return ExecuteTaskInternal(token => task(token, argument), cancellationToken);
+        return ExecuteTaskInternal(task, argument, cancellationToken);
     }
 }

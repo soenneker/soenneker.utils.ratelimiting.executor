@@ -8,7 +8,7 @@ namespace Soenneker.Utils.RateLimiting.Executor;
 /// </summary>
 public sealed partial class RateLimitingExecutor
 {
-    private T ExecuteInternal<T>(Func<CancellationToken, T> task, CancellationToken cancellationToken)
+    private T ExecuteInternal<T, TArg>(Func<CancellationToken, TArg, T> task, TArg argument, CancellationToken cancellationToken)
     {
         CancellationToken token = GetExecutionToken(cancellationToken, out CancellationTokenSource? linkedCts);
         using (linkedCts)
@@ -22,7 +22,7 @@ public sealed partial class RateLimitingExecutor
 
                 try
                 {
-                    return task(token);
+                    return task(token, argument);
                 }
                 finally
                 {
@@ -40,7 +40,7 @@ public sealed partial class RateLimitingExecutor
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
     public T Execute<T>(Func<CancellationToken, T> action, CancellationToken cancellationToken = default) =>
-        ExecuteInternal(action, cancellationToken);
+        ExecuteInternal(static (token, callback) => callback(token), action, cancellationToken);
 
     /// <summary>
     /// Executes the execute operation.
@@ -52,7 +52,7 @@ public sealed partial class RateLimitingExecutor
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The result of the operation.</returns>
     public T Execute<T, TArg>(Func<CancellationToken, TArg, T> action, TArg argument, CancellationToken cancellationToken = default) =>
-        ExecuteInternal(token => action(token, argument), cancellationToken);
+        ExecuteInternal(action, argument, cancellationToken);
 
     /// <summary>
     /// Executes the execute operation.
@@ -60,11 +60,11 @@ public sealed partial class RateLimitingExecutor
     /// <param name="action">The action.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     public void Execute(Action<CancellationToken> action, CancellationToken cancellationToken = default) =>
-        ExecuteInternal(token =>
+        ExecuteInternal(static (token, callback) =>
         {
-            action(token);
+            callback(token);
             return 0;
-        }, cancellationToken);
+        }, action, cancellationToken);
 
     private void WaitForNextExecutionSync(CancellationToken cancellationToken)
     {
