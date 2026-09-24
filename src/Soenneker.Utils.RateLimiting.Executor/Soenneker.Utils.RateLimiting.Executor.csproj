@@ -44,7 +44,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Asyncs.Locks" Version="4.0.89" />
+        <PackageReference Include="Soenneker.Asyncs.Locks" Version="4.0.90" />
         <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.123" />
         <PackageReference Include="Soenneker.Utils.Delay" Version="4.0.89" />
         <PackageReference Include="Soenneker.Extensions.CancellationTokens" Version="4.0.26" />
