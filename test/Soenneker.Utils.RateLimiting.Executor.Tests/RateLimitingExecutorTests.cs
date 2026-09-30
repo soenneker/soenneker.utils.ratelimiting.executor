@@ -60,7 +60,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Method1Test()
+    public async ValueTask Method1Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -69,7 +69,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Method2Test()
+    public async ValueTask Method2Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -78,7 +78,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Method3Test()
+    public async ValueTask Method3Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -87,7 +87,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Method4Test()
+    public async ValueTask Method4Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -96,7 +96,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Method5Test()
+    public async ValueTask Method5Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -105,7 +105,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Method7Test()
+    public async ValueTask Method7Test()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -123,7 +123,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Execute_ShouldRunTaskWithoutDelay_WhenFirstExecution()
+    public async ValueTask Execute_ShouldRunTaskWithoutDelay_WhenFirstExecution()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -139,7 +139,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Execute_ShouldRespectExecutionInterval_BetweenTasks()
+    public async ValueTask Execute_ShouldRespectExecutionInterval_BetweenTasks()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -171,7 +171,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task Execute_ShouldThrowOperationCanceledException_WhenCancelled(CancellationToken cancellationToken)
+    public async ValueTask Execute_ShouldThrowOperationCanceledException_WhenCancelled(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -198,7 +198,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async Task DisposeAsync_ShouldCancelPendingTasks()
+    public async ValueTask DisposeAsync_ShouldCancelPendingTasks()
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
