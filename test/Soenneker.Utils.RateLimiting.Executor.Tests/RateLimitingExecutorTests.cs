@@ -60,57 +60,57 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask Method1Test()
+    public async ValueTask Method1Test(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.ExecuteTask(_ => Method1(), CancellationToken.None);
+        await executor.ExecuteTask(_ => Method1(), cancellationToken);
     }
 
     [Test]
-    public async ValueTask Method2Test()
+    public async ValueTask Method2Test(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.Execute(_ => Method2(), CancellationToken.None);
+        await executor.Execute(_ => Method2(), cancellationToken);
     }
 
     [Test]
-    public async ValueTask Method3Test()
+    public async ValueTask Method3Test(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        string result = await executor.ExecuteTask(_ => Method3(), CancellationToken.None);
+        string result = await executor.ExecuteTask(_ => Method3(), cancellationToken);
     }
 
     [Test]
-    public async ValueTask Method4Test()
+    public async ValueTask Method4Test(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.ExecuteTask(_ => Method4(""), CancellationToken.None);
+        await executor.ExecuteTask(_ => Method4(""), cancellationToken);
     }
 
     [Test]
-    public async ValueTask Method5Test()
+    public async ValueTask Method5Test(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        var result = await executor.Execute(_ => Method5(""), CancellationToken.None);
+        var result = await executor.Execute(_ => Method5(""), cancellationToken);
     }
 
     [Test]
-    public async ValueTask Method7Test()
+    public async ValueTask Method7Test(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.ExecuteTask(_ => Method7(4, 3), CancellationToken.None);
+        await executor.ExecuteTask(_ => Method7(4, 3), cancellationToken);
     }
 
     [Test]
@@ -123,7 +123,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask Execute_ShouldRunTaskWithoutDelay_WhenFirstExecution()
+    public async ValueTask Execute_ShouldRunTaskWithoutDelay_WhenFirstExecution(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -133,13 +133,13 @@ public class RateLimitingExecutorTests : HostedUnitTest
         {
             taskExecuted = true;
             await Task.CompletedTask;
-        }, CancellationToken.None);
+        }, cancellationToken);
 
         taskExecuted.Should().BeTrue();
     }
 
     [Test]
-    public async ValueTask Execute_ShouldRespectExecutionInterval_BetweenTasks()
+    public async ValueTask Execute_ShouldRespectExecutionInterval_BetweenTasks(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
@@ -149,7 +149,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
         {
             taskExecuted = true;
             await Task.CompletedTask;
-        }, CancellationToken.None);
+        }, cancellationToken);
 
         taskExecuted.Should().BeTrue();
 
@@ -160,7 +160,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
         {
             taskExecuted = true;
             await Task.CompletedTask;
-        }, CancellationToken.None);
+        }, cancellationToken);
 
         DateTime endTime = DateTime.UtcNow;
 
@@ -176,7 +176,7 @@ public class RateLimitingExecutorTests : HostedUnitTest
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        await executor.Execute(async token => { await DelayUtil.Delay(100, null, token); }, CancellationToken.None);
+        await executor.Execute(async token => { await DelayUtil.Delay(100, null, token); }, cancellationToken);
 
         await executor.DisposeAsync();
 
@@ -198,12 +198,12 @@ public class RateLimitingExecutorTests : HostedUnitTest
     }
 
     [Test]
-    public async ValueTask DisposeAsync_ShouldCancelPendingTasks()
+    public async ValueTask DisposeAsync_ShouldCancelPendingTasks(CancellationToken cancellationToken)
     {
         TimeSpan executionInterval = TimeSpan.FromMilliseconds(500);
         var executor = new RateLimitingExecutor(executionInterval);
 
-        ValueTask executionTask = executor.Execute(async token => { await DelayUtil.Delay(1000, null, token); }, CancellationToken.None);
+        ValueTask executionTask = executor.Execute(async token => { await DelayUtil.Delay(1000, null, token); }, cancellationToken);
 
         await executor.DisposeAsync();
 
